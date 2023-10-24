@@ -5,14 +5,14 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
-#include <std_msgs/msg/int32.h>
+#include <custom_messages/msg/tmotor_state.h>
 
 #if !defined(MICRO_ROS_TRANSPORT_ARDUINO_SERIAL)
 #error This example is only avaliable for Arduino framework with serial transport.
 #endif
 
 rcl_publisher_t publisher;
-std_msgs__msg__Int32 msg;
+custom_messages__msg__TmotorState msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -34,7 +34,11 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
     RCLC_UNUSED(last_call_time);
     if (timer != NULL) {
         RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
-        msg.data++;
+        msg.position += 1.;
+        msg.speed += 1.;
+        msg.current += 1.;
+        msg.temp += 1;
+        msg.error_code = 0;
     }
 }
 
@@ -56,7 +60,7 @@ void setup() {
     RCCHECK(rclc_publisher_init_default(
             &publisher,
             &node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+            ROSIDL_GET_MSG_TYPE_SUPPORT(custom_messages, msg, TmotorState),
             "micro_ros_platformio_node_publisher"));
 
     // create timer,
@@ -71,7 +75,11 @@ void setup() {
     RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
     RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
-    msg.data = 0;
+    msg.position = 0.;
+    msg.speed = 0.;
+    msg.current = 0.;
+    msg.temp = 0;
+    msg.error_code = 0;
 }
 
 void loop() {

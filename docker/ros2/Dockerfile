@@ -60,17 +60,6 @@ RUN echo "source /micro_ros_ws/install/local_setup.bash" >> /root/.bashrc
 
 FROM ros2-base-and-micro-ros as ros2-base-and-micro-ros-and-platformio
 
-# Add pio binaries to path
-ENV PATH=$PATH:/root/.platformio/penv/bin/
-ENV PLATFORMIO_CORE_DIR=/micro_ros_ws/.platformio
-
-# Install platformio the recommended way, then move for caching
-RUN apt-get install -y python3-venv python3-distutils
-RUN curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py &&  \
-    python3 get-platformio.py &&  \
-    rm get-platformio.py &&  \
-    mv /micro_ros_ws/.platformio /root/.platformio
-
-# Allow other packages and libraries to be downloaded to a different path for caching
-RUN echo "[ -d /micro_ros_ws/.platformio ] || mkdir -p /micro_ros_ws/.platformio &&  \n\
-    ln -s /root/.platformio/penv /micro_ros_ws/.platformio/penv" >> /root/.bashrc
+ENV PATH=$PATH:/root/scripts/:/root/.platformio/penv/bin/
+COPY ./scripts/ensure-platformio.sh /root/scripts/ensure-platformio.sh
+RUN chmod +x /root/scripts/ensure-platformio.sh

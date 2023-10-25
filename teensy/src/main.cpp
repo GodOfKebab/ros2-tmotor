@@ -5,6 +5,7 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
+#include <FlexCAN_T4.h>
 #include <custom_messages/msg/tmotor_state.h>
 
 #if !defined(MICRO_ROS_TRANSPORT_ARDUINO_SERIAL)
@@ -12,13 +13,11 @@
 #endif
 
 rcl_publisher_t publisher;
-custom_messages__msg__TmotorState msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
-rcl_timer_t timer;
 
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
@@ -30,16 +29,20 @@ void error_loop() {
     }
 }
 
-void timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
-    RCLC_UNUSED(last_call_time);
-    if (timer != NULL) {
-        RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
-        msg.position += 1.;
-        msg.speed += 1.;
-        msg.current += 1.;
-        msg.temp += 1;
-        msg.error_code = 0;
+FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> Can0;
+
+void tmotor_sniffer(const CAN_message_t &can_msg) {
+    custom_messages__msg__TmotorState msg;
+    // Assume failure at teensy-side, if not override
+    msg.error_code = 7;
+    if (can_msg.len == 8) {
+        msg.angular_position = (int16_t)(can_msg.buf[1] | ((int16_t)can_msg.buf[0] << 8)) * 0.00174533;  // 1 / 10 * 6 * pi / 180
+        msg.angular_velocity = (int16_t)(can_msg.buf[3] | ((int16_t)can_msg.buf[2] << 8)) * 0.01047198;  // 1 / 10 * 6 * pi / 180
+        msg.current          = (int16_t)(can_msg.buf[5] | ((int16_t)can_msg.buf[4] << 8)) / 100.;
+        msg.temp             = (int8_t)can_msg.buf[6];
+        msg.error_code       = (int8_t)can_msg.buf[7];
     }
+    RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
 }
 
 void setup() {
@@ -54,35 +57,27 @@ void setup() {
     RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
     // create node
-    RCCHECK(rclc_node_init_default(&node, "micro_ros_platformio_node", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "micro_ros_teensy_node", "", &support));
 
     // create publisher
+    custom_messages__msg__TmotorState msg;
     RCCHECK(rclc_publisher_init_default(
             &publisher,
             &node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(custom_messages, msg, TmotorState),
-            "micro_ros_platformio_node_publisher"));
+            "/micro_ros_teensy/motor_state"));
 
-    // create timer,
-    const unsigned int timer_timeout = 1000;
-    RCCHECK(rclc_timer_init_default(
-            &timer,
-            &support,
-            RCL_MS_TO_NS(timer_timeout),
-            timer_callback));
-
-    // create executor
-    RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-    RCCHECK(rclc_executor_add_timer(&executor, &timer));
-
-    msg.position = 0.;
-    msg.speed = 0.;
-    msg.current = 0.;
-    msg.temp = 0;
-    msg.error_code = 0;
+    Can0.begin();
+    Can0.setBaudRate(1000000);
+    Can0.setMaxMB(16);
+    Can0.enableFIFO();
+    Can0.enableFIFOInterrupt();
+    Can0.onReceive(tmotor_sniffer);
+    Can0.mailboxStatus();
 }
 
 void loop() {
-    delay(100);
-    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+//    delay(100);
+    Can0.events();
+    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(1)));
 }

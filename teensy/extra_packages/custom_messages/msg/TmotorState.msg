@@ -1,10 +1,10 @@
 # "motor packets" in servo mode received from the motor according to the datasheet
 
 # angular position in radians (>=0.1 degree accuracy)
-float64 position
+float64 angular_position
 
 # angular velocity in rad/s (>=0.1 degree/s accuracy)
-float64 speed
+float64 angular_velocity
 
 # current draw in A (>=10 mA accuracy)
 float64 current
@@ -19,5 +19,6 @@ int8 temp
 #   - 3 means over voltage fault
 #   - 4 means under voltage fault
 #   - 5 means encoder fault
-#   - 6 means phase current unbalance fault (The hardware may be damaged);
+#   - 6 means phase current unbalance fault (The hardware may be damaged)
+#   - 7 means teensy error
 int8 error_code

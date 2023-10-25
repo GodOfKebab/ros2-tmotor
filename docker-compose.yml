@@ -18,6 +18,16 @@ services:
     volumes:
       - "./docker/ros2/src:/ros2_ws/src"
 
+  ros2-base-and-micro-ros:
+    build:
+      context: "docker/ros2"
+      target: ros2-base-and-micro-ros
+    init: true
+    privileged: true
+    volumes:
+      - "./teensy/extra_packages:/micro_ros_ws/src"
+      - "/dev:/dev"
+
   ros2-teensy-firmware-builder:
     build:
       context: "docker/ros2"
@@ -26,8 +36,19 @@ services:
     privileged: true
     volumes:
       - "./teensy:/micro_ros_ws/pio_project"
-      - "./docker/ros2/caches/.pio-system:/micro_ros_ws/.platformio"
-    command: /bin/bash -c "cd /micro_ros_ws/pio_project && pio run"
+      - "./docker/ros2/caches/.platformio:/root/.platformio"
+    command: /bin/bash -c "source ~/.bashrc && ensure-platformio.sh && cd /micro_ros_ws/pio_project && pio run"
+
+  ros2-teensy-firmware-eraser:
+    build:
+      context: "docker/ros2"
+      target: ros2-base-and-micro-ros-and-platformio
+    init: true
+    privileged: true
+    volumes:
+      - "./teensy:/micro_ros_ws/pio_project"
+      - "./docker/ros2/caches/.platformio:/root/.platformio"
+    command: /bin/bash -c "source ~/.bashrc && ensure-platformio.sh && cd /micro_ros_ws/pio_project && pio run --target clean_microros"
 
   ros2-teensy-firmware-flasher:
     build:
@@ -37,7 +58,7 @@ services:
     privileged: true
     volumes:
       - "./teensy:/micro_ros_ws/pio_project"
-      - "./docker/ros2/caches/.pio-system:/micro_ros_ws/.platformio"
+      - "./docker/ros2/caches/.platformio:/root/.platformio"
       - "/dev:/dev"
-    command: /bin/bash -c "cd /micro_ros_ws/pio_project && pio run --target upload"
+    command: /bin/bash -c "source ~/.bashrc && ensure-platformio.sh && cd /micro_ros_ws/pio_project && pio run --target upload"
 

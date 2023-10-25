@@ -43,7 +43,7 @@ void tmotor_sniffer(const CAN_message_t &can_msg) {
         tmotor_id = can_msg.id;
         msg.angular_position = (int16_t)(can_msg.buf[1] | ((int16_t)can_msg.buf[0] << 8)) * 0.00174533;  // 1 / 10 * 6 * pi / 180
         msg.angular_velocity = (int16_t)(can_msg.buf[3] | ((int16_t)can_msg.buf[2] << 8)) * 0.01047198;  // 1 / 10 * 6 * pi / 180
-        msg.current          = (int16_t)(can_msg.buf[5] | ((int16_t)can_msg.buf[4] << 8)) * 0.1;
+        msg.current          = (int16_t)(can_msg.buf[5] | ((int16_t)can_msg.buf[4] << 8)) * 0.01;
         msg.temp             = (int8_t)can_msg.buf[6];
         msg.error_code       = (int8_t)can_msg.buf[7];
     }

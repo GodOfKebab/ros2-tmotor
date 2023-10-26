@@ -11,7 +11,7 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
-RUN apt-get update && apt-get upgrade
+RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 RUN apt install -y ros-dev-tools ros-iron-ros-base
 
@@ -19,8 +19,9 @@ RUN mkdir src
 WORKDIR /ros2_ws
 RUN colcon build
 RUN chsh -s /bin/bash
-RUN echo "source /opt/ros/iron/setup.bash" >> /root/.bashrc
-RUN echo "source /ros2_ws/install/local_setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/iron/setup.bash" >> /root/.rosrc
+RUN echo "source /ros2_ws/install/local_setup.bash" >> /root/.rosrc
+RUN echo "source /root/.rosrc" >> /root/.bashrc
 ENV PATH=$PATH:/opt/ros/iron/bin/
 
 # Enable below to test the talker/listener demo
@@ -55,11 +56,11 @@ RUN /bin/bash -c "cd /micro_ros_ws &&  \
 RUN /bin/bash -c "cd /micro_ros_ws &&  \
     source /opt/ros/iron/setup.bash && source /micro_ros_ws/install/local_setup.bash &&  \
     ros2 run micro_ros_setup build_agent.sh"
-RUN echo "source /micro_ros_ws/install/local_setup.bash" >> /root/.bashrc
+RUN echo "source /micro_ros_ws/install/local_setup.bash" >> /root/.rosrc
 
 
 FROM ros2-base-and-micro-ros as ros2-base-and-micro-ros-and-platformio
 
 ENV PATH=$PATH:/root/scripts/:/root/.platformio/penv/bin/
 COPY ./scripts/ensure-platformio.sh /root/scripts/ensure-platformio.sh
-RUN chmod +x /root/scripts/ensure-platformio.sh
+RUN chmod +x /root/scripts/ensure-platformio.sh && echo "ensure-platformio.sh" >> /root/.rosrc

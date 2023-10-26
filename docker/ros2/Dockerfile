@@ -1,4 +1,4 @@
-FROM ubuntu AS ros2-base
+FROM ubuntu:22.04 AS ros2-base
 
 RUN apt update
 RUN apt install -y locales && \

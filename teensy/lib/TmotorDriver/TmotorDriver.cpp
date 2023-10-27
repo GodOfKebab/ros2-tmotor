@@ -136,12 +136,11 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
     RCSOFTCHECK(rcl_publish(&tmotor_state_publisher, &msg, NULL));
 }
 
-// !!! NOT FUNCTIONAL !!!
 void TmotorDriver::set_duty_cycle_callback(const void *msgin) {
     const auto * msg = (const custom_messages__msg__TmotorServoDutyCycleCommand *)msgin;
     uint8_t send_index = 0;
     uint8_t buffer[4];
-    auto duty_cycle_clipped = max(-1., min(1., msg->duty_cycle)) * 10000000.;
+    auto duty_cycle_clipped = max(-1., min(1., msg->duty_cycle)) * 100000.;
     buffer_append_int32(buffer, (int32_t)(duty_cycle_clipped), &send_index);
     comm_can_transit_eid((tmotor_id  & 0xFF) | ((uint32_t) CAN_PACKET_SET_DUTY << 8), buffer, send_index);
 }

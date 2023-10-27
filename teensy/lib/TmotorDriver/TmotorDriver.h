@@ -2,6 +2,14 @@
 #include <ros_tmotor.h>
 #include <FlexCAN_T4.h>
 
+#include <custom_messages/msg/tmotor_state.h>
+#include <custom_messages/msg/tmotor_servo_duty_cycle_command.h>
+#include <custom_messages/msg/tmotor_servo_current_loop_command.h>
+#include <custom_messages/msg/tmotor_servo_current_brake_command.h>
+#include <custom_messages/msg/tmotor_servo_velocity_command.h>
+#include <custom_messages/msg/tmotor_servo_position_command.h>
+#include <custom_messages/msg/tmotor_servo_position_velocity_loop_command.h>
+
 typedef enum {
     CAN_PACKET_SET_DUTY = 0,      // Duty cycle mode
     CAN_PACKET_SET_CURRENT,       // Current loop mode

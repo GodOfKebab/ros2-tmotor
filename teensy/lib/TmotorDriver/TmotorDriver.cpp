@@ -184,16 +184,15 @@ void TmotorDriver::set_position_callback(const void *msgin) {
     comm_can_transit_eid((tmotor_id  & 0xFF) | ((uint32_t) CAN_PACKET_SET_POS << 8), buffer, send_index);
 }
 
-// !!! NOT FUNCTIONAL !!!
 void TmotorDriver::set_position_velocity_loop_callback(const void *msgin) {
     const auto * msg = (const custom_messages__msg__TmotorServoPositionVelocityLoopCommand *)msgin;
     uint8_t send_index = 0;
     uint8_t buffer[8];
     auto position_clipped = max(-360000000., min(360000000., msg->angular_position * 572957.80)); // 10000. * 180/pi
     buffer_append_int32(buffer, (int32_t)(position_clipped), &send_index);
-    auto velocity_clipped = max(-32768., min(32767., msg->angular_velocity * 954.92966)); // 10*60/(2*pi)
+    auto velocity_clipped = max(-32768., min(32767., msg->angular_velocity * 95.492966)); // 60/(2*pi)
     buffer_append_int16(buffer, (int16_t)(velocity_clipped), &send_index);
-    auto acceleration_clipped = max(0., min(200., msg->angular_acceleration * 0.047746483)); // 10*(60/(2*pi))/20000
+    auto acceleration_clipped = max(0., min(200., msg->angular_acceleration * 95.492966)); // 60/(2*pi)
     buffer_append_int16(buffer, (int16_t)(acceleration_clipped), &send_index);
     comm_can_transit_eid((tmotor_id  & 0xFF) | ((uint32_t) CAN_PACKET_SET_POS_SPD << 8), buffer, send_index);
 }

@@ -159,7 +159,7 @@ void TmotorDriver::set_current_brake_callback(const void *msgin) {
     const auto * msg = (const custom_messages__msg__TmotorServoCurrentBrakeCommand *)msgin;
     uint8_t send_index = 0;
     uint8_t buffer[4];
-    auto current_clipped = max(0., min(60., msg->current)) * 10000.;
+    auto current_clipped = max(0., min(60., msg->current)) * 100000.;
     buffer_append_int32(buffer, (int32_t)(current_clipped), &send_index);
     comm_can_transit_eid((tmotor_id  & 0xFF) | ((uint32_t) CAN_PACKET_SET_CURRENT_BRAKE << 8), buffer, send_index);
 }

@@ -13,7 +13,7 @@ rcl_node_t node;
 
 void setup() {
     // Configure serial transport
-    Serial.begin(115200);
+    Serial.begin(4608000);
     set_microros_serial_transports(Serial);
     delay(2000);
 
@@ -25,8 +25,9 @@ void setup() {
     // create node
     RCCHECK(rclc_node_init_default(&node, "micro_ros_teensy_node", "", &support));
 
-    // create executor
-    RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
+    // create executor (6 is the total number of is the total number of subscriptions, timers, services,
+    // clients and guard conditions. Do not include the number of nodes and publishers.) --docs
+    RCCHECK(rclc_executor_init(&executor, &support.context, 6, &allocator));
 
     TmotorDriver::init(&executor, &node);
 }

@@ -3,7 +3,7 @@
 This repo contains codes to interact with [t-motor's AK series robotic actuators](https://store.tmotor.com/category-97-b0-AK+Series+Dynamical+Modular.html) from ROS2.
 For this, I created a [teensy](https://www.pjrc.com/store/teensy40.html)-based driver with [micro-ROS](https://micro.ros.org) using the Arduino framework.
 
-NOTE: This is a work in progress. I am able to run the following with relative ease and persistence, and I am trying my best for you to have less problems, but expect bugs.
+⚠️ NOTE: This is a work in progress. I am able to run the following with relative ease and persistence, and I am trying my best for you to have less problems, but **expect bugs**.
 
 ## Folder Structure
 

@@ -8,7 +8,7 @@ services:
       target: ros2-base
     init: true
     volumes:
-      - "./ros2_ws/src:/ros2_ws/src"
+      - "./ros2_ws/:/ros2_ws/"
 
   ros2-desktop:
     build:
@@ -20,7 +20,7 @@ services:
     environment:
       - DISPLAY
     volumes:
-      - "./ros2_ws/src:/ros2_ws/src"
+      - "./ros2_ws/:/ros2_ws/"
 
   ros2-base-and-micro-ros:
     build:
@@ -30,6 +30,7 @@ services:
     privileged: true
     volumes:
       - "./teensy/extra_packages/custom_messages:/ros2_ws/src/custom_messages"
+      - "./ros2_ws/:/ros2_ws/"
       - "/dev:/dev"
 
   ros2-desktop-and-micro-ros:
@@ -43,7 +44,7 @@ services:
       - DISPLAY
     volumes:
       - "./teensy/extra_packages/custom_messages:/ros2_ws/src/custom_messages"
-      - "./ros2_ws/src:/ros2_ws/src"
+      - "./ros2_ws/:/ros2_ws/"
       - "/dev:/dev"
 
   ros2-teensy-firmware-builder:

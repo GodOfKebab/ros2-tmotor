@@ -20,7 +20,7 @@ WORKDIR /ros2_ws
 RUN colcon build
 RUN chsh -s /bin/bash
 RUN echo "source /opt/ros/iron/setup.bash" >> /root/.rosrc
-RUN echo "source /ros2_ws/install/local_setup.bash" >> /root/.rosrc
+RUN echo "[ -f \"/ros2_ws/install/local_setup.bash\" ] && source /ros2_ws/install/local_setup.bash" >> /root/.rosrc
 RUN echo "source /root/.rosrc" >> /root/.bashrc
 ENV PATH=$PATH:/opt/ros/iron/bin/
 

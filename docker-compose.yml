@@ -8,15 +8,19 @@ services:
       target: ros2-base
     init: true
     volumes:
-      - "./docker/ros2/src:/ros2_ws/src"
+      - "./ros2_ws/src:/ros2_ws/src"
 
   ros2-desktop:
     build:
       context: "docker/ros2"
       target: ros2-desktop
     init: true
+    privileged: true
+    network_mode: host
+    environment:
+      - DISPLAY
     volumes:
-      - "./docker/ros2/src:/ros2_ws/src"
+      - "./ros2_ws/src:/ros2_ws/src"
 
   ros2-base-and-micro-ros:
     build:
@@ -25,7 +29,21 @@ services:
     init: true
     privileged: true
     volumes:
-      - "./teensy/extra_packages:/micro_ros_ws/src"
+      - "./teensy/extra_packages/custom_messages:/ros2_ws/src/custom_messages"
+      - "/dev:/dev"
+
+  ros2-desktop-and-micro-ros:
+    build:
+      context: "docker/ros2"
+      target: ros2-desktop-and-micro-ros
+    init: true
+    privileged: true
+    network_mode: host
+    environment:
+      - DISPLAY
+    volumes:
+      - "./teensy/extra_packages/custom_messages:/ros2_ws/src/custom_messages"
+      - "./ros2_ws/src:/ros2_ws/src"
       - "/dev:/dev"
 
   ros2-teensy-firmware-builder:

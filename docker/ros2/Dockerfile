@@ -59,6 +59,11 @@ RUN /bin/bash -c "cd /micro_ros_ws &&  \
 RUN echo "source /micro_ros_ws/install/local_setup.bash" >> /root/.rosrc
 
 
+FROM ros2-base-and-micro-ros as ros2-desktop-and-micro-ros
+
+RUN apt install -y ros-dev-tools ros-iron-desktop
+
+
 FROM ros2-base-and-micro-ros as ros2-base-and-micro-ros-and-platformio
 
 ENV PATH=$PATH:/root/scripts/:/root/.platformio/penv/bin/

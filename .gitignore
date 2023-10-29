@@ -1,3 +1,5 @@
 .*
 docker/ros2/caches/
 teensy/.*
+ros2_ws
+!ros2_ws/src/

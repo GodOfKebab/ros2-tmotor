@@ -15,9 +15,7 @@ RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 RUN apt install -y ros-dev-tools ros-iron-ros-base
 
-RUN mkdir src
 WORKDIR /ros2_ws
-RUN colcon build
 RUN chsh -s /bin/bash
 RUN echo "source /opt/ros/iron/setup.bash" >> /root/.rosrc
 RUN echo "[ -f \"/ros2_ws/install/local_setup.bash\" ] && source /ros2_ws/install/local_setup.bash" >> /root/.rosrc

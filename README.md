@@ -1,20 +1,26 @@
 # ROS2/micro-ROS adapter for T-motor's (AK Series) Robotic Actuators
 
 This repo contains codes to interact with [t-motor's AK series robotic actuators](https://store.tmotor.com/category-97-b0-AK+Series+Dynamical+Modular.html) from ROS2.
-For this, I created a [teensy](https://www.pjrc.com/store/teensy40.html)-based driver with [micro-ROS](https://micro.ros.org) using the Arduino framework.
+For this, I created a [teensy](https://www.pjrc.com/store/teensy40.html)-based driver with [micro-ROS](https://micro.ros.org) using the Arduino framework over the CAN Bus interface.
+The firmware supports both servo and MIT contoller mode, but you need to set this using the Rubik Link V2.0.
+Once the correct mode is set, you can interact with the motor by subscribing and publishing to relevant topics.
 
-⚠️ NOTE: This is a work in progress. I am able to run the following with relative ease and persistence, and I am trying my best for you to have less problems, but **expect bugs**.
+⚠️ NOTE: This is a work in progress.
+I am able to run the following with relative ease and persistence, and I am trying my best for you to have fewer problems, but **expect bugs**.
+I am using the AK60-6 V1.1 motor.
 
 ## Folder Structure
 
 - `./docker`: This folder holds all configurations of docker images used in development.
 - `./teensy`: This folder contains the platformio project that is used to generate the teensy firmware.
+- `./ros2_ws`: This folder is the ros2 workspace volume.
+- `./ros2_ws/src/example_usages`: This folder contains an example usage with a joystick.
 
 ## Getting Started
 
-### Teensy Wiring
+### Wiring Overview
 
-TODO: add a diagram.
+<img src="docs/figures/tmotor-connection.drawio.png"/>
 
 ### Teensy Firmware Setup
 
@@ -94,13 +100,15 @@ In another terminal, confirm that you have all the topics:
 
 ```
 root@df59029b700c:/ros2_ws# ros2 topic list
-/micro_ros_teensy/motor_state
-/micro_ros_teensy/set_current_brake
-/micro_ros_teensy/set_current_loop
-/micro_ros_teensy/set_duty_cycle
-/micro_ros_teensy/set_position
-/micro_ros_teensy/set_position_velocity_loop
-/micro_ros_teensy/set_velocity
+/micro_ros_teensy/motor_state                  # Teensy publishes motor's state here for the MIT controller mode only when control command is sent.  
+/micro_ros_teensy/servo_state                  # Teensy publishes motor's state here for the Servo mode even if you don't send any command to the motor.
+/micro_ros_teensy/set_current_brake            # By publishing to this topic, you can create a brake upto some current.
+/micro_ros_teensy/set_current_loop             # By publishing to this topic, you can create a current based feedback loop.
+/micro_ros_teensy/set_duty_cycle               # By publishing to this topic, you can set the duty cycle of the motor.
+/micro_ros_teensy/set_motor_control            # By publishing to this topic, you can control the motor with MIT contoller.
+/micro_ros_teensy/set_position                 # By publishing to this topic, you can set the angular position.
+/micro_ros_teensy/set_position_velocity_loop   # By publishing to this topic, you can set the angular position with max. velocity and acceleration constraints.
+/micro_ros_teensy/set_velocity                 # By publishing to this topic, you can set the angular velocity.
 ...
 ```
 
@@ -132,5 +140,8 @@ ros2 topic pub /micro_ros_teensy/set_position custom_messages/msg/TmotorServoPos
 
 ## POSITION AND VELOCITY (position between -628.3 and 628.3 rad, max velocity between -343.1 and 343.1 rad/s, max acceleration between 0 and 2.0 rad/s^2)
 ros2 topic pub /micro_ros_teensy/set_position_velocity_loop custom_messages/msg/TmotorServoPositionVelocityLoopCommand '{angular_position: 0.0, angular_velocity: 0.0, angular_acceleration: 0.0}' 
+
+## MOTOR CONTROL
+ros2 topic pub /micro_ros_teensy/set_motor_control custom_messages/msg/TmotorMotorControlCommand '{angular_position: 0.0, k_p: 0.3, angular_velocity: 0.0, k_d: 0.0, torque: 0.0}' -r 10
 ```
 

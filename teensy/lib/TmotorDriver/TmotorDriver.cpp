@@ -142,6 +142,7 @@ void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
     CanBus.onReceive(TmotorDriver::tmotor_state_sniffer);
     CanBus.mailboxStatus();
 
+    comm_can_transit_eid_motor(tmotor_motor_id, zero_mode, 8);
     comm_can_transit_eid_motor(tmotor_motor_id, enter_mode, 8);
 }
 

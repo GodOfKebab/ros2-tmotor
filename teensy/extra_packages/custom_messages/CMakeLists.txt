@@ -26,13 +26,15 @@ endif()
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/TmotorState.msg"
+        "msg/TmotorServoState.msg"
         "msg/TmotorServoDutyCycleCommand.msg"
         "msg/TmotorServoCurrentLoopCommand.msg"
         "msg/TmotorServoCurrentBrakeCommand.msg"
         "msg/TmotorServoVelocityCommand.msg"
         "msg/TmotorServoPositionCommand.msg"
         "msg/TmotorServoPositionVelocityLoopCommand.msg"
+        "msg/TmotorMotorState.msg"
+        "msg/TmotorMotorControlCommand.msg"
         )
 
 ament_package()

@@ -25,9 +25,9 @@ void setup() {
     // create node
     RCCHECK(rclc_node_init_default(&node, "micro_ros_teensy_node", "", &support));
 
-    // create executor (6 is the total number of is the total number of subscriptions, timers, services,
+    // create executor (7 is the total number of subscriptions, timers, services,
     // clients and guard conditions. Do not include the number of nodes and publishers.) --docs
-    RCCHECK(rclc_executor_init(&executor, &support.context, 6, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 7, &allocator));
 
     TmotorDriver::init(&executor, &node);
 }

@@ -2,13 +2,26 @@
 #include <ros_tmotor.h>
 #include <FlexCAN_T4.h>
 
-#include <custom_messages/msg/tmotor_state.h>
+#include <custom_messages/msg/tmotor_servo_state.h>
 #include <custom_messages/msg/tmotor_servo_duty_cycle_command.h>
 #include <custom_messages/msg/tmotor_servo_current_loop_command.h>
 #include <custom_messages/msg/tmotor_servo_current_brake_command.h>
 #include <custom_messages/msg/tmotor_servo_velocity_command.h>
 #include <custom_messages/msg/tmotor_servo_position_command.h>
 #include <custom_messages/msg/tmotor_servo_position_velocity_loop_command.h>
+#include <custom_messages/msg/tmotor_motor_state.h>
+#include <custom_messages/msg/tmotor_motor_control_command.h>
+
+#define T_MOTOR_P_MIN  (-12.5)
+#define T_MOTOR_P_MAX    12.5
+#define T_MOTOR_V_MIN  (-45.)
+#define T_MOTOR_V_MAX    45.
+#define T_MOTOR_T_MIN  (-15.)
+#define T_MOTOR_T_MAX    15.
+#define T_MOTOR_K_P_MIN  0.
+#define T_MOTOR_K_P_MAX  500.
+#define T_MOTOR_K_D_MIN  0.
+#define T_MOTOR_K_D_MAX  5.
 
 typedef enum {
     CAN_PACKET_SET_DUTY = 0,      // Duty cycle mode
@@ -50,9 +63,14 @@ private:
     // ROS2 topic /micro_ros_teensy/set_position_velocity_loop callback handler
     static void set_position_velocity_loop_callback(const void * msgin);
 
+    // ROS2 topic /micro_ros_teensy/set_motor_control callback handler
+    static void set_motor_control_callback(const void *msgin);
+
     // Helper functions from the datasheet
-    static void comm_can_transit_eid(uint32_t id, const uint8_t* data, uint8_t len);
+    static void comm_can_transit_eid_servo(uint32_t id, const uint8_t* data, uint8_t len);
+    static void comm_can_transit_eid_motor(uint32_t id, const uint8_t *data, uint8_t len);
     static void buffer_append_int32(uint8_t* buffer, int32_t number, uint8_t* index);
     static void buffer_append_int16(uint8_t* buffer, int16_t number, uint8_t* index);
-
+    static int float_to_uint_w_bounds(double x, double x_min, double x_max, uint16_t bits);
+    static double uint_to_float(int x, double x_min, double x_max, uint16_t bits);
 };

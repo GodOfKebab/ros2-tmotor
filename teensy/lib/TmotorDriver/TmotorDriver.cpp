@@ -23,8 +23,9 @@ rcl_subscription_t set_position_velocity_loop_subscriber;
 custom_messages__msg__TmotorMotorControlCommand motor_control_msg;
 rcl_subscription_t set_motor_control_subscriber;
 
-//uint8_t enter_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC};
-//uint8_t exit_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD};
+uint8_t enter_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC};
+uint8_t exit_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD};
+uint8_t zero_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE};
 
 void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
 
@@ -140,6 +141,8 @@ void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
     CanBus.enableFIFOInterrupt();
     CanBus.onReceive(TmotorDriver::tmotor_state_sniffer);
     CanBus.mailboxStatus();
+
+    comm_can_transit_eid_motor(tmotor_motor_id, enter_mode, 8);
 }
 
 void TmotorDriver::check_events() {

@@ -1,5 +1,8 @@
 # "motor packets" in servo mode received from the motor according to the datasheet
 
+# servo id
+uint16 id
+
 # angular position in radians (>=0.1 degree accuracy)
 float64 angular_position
 

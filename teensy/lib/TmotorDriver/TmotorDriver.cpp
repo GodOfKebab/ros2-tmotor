@@ -1,6 +1,5 @@
 #include "TmotorDriver.h"
 
-uint32_t tmotor_servo_id = 0x00;
 uint32_t tmotor_motor_id = 0x01;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> CanBus;
@@ -156,6 +155,7 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
         custom_messages__msg__TmotorServoState servo_msg;
         servo_msg.error_code = 7;
         if (can_msg.len == 8) {
+            servo_msg.id               = (uint16_t) can_msg.id & 0xFF;
             servo_msg.angular_position =
                     (int16_t) (can_msg.buf[1] | ((int16_t) can_msg.buf[0] << 8)) * 0.00174533;  // 1 / 10 * 6 * pi / 180
             servo_msg.angular_velocity =
@@ -190,7 +190,7 @@ void TmotorDriver::set_duty_cycle_callback(const void *msgin) {
     uint8_t buffer[4];
     auto duty_cycle_clipped = max(-1., min(1., msg->duty_cycle)) * 100000.;
     buffer_append_int32(buffer, (int32_t)(duty_cycle_clipped), &send_index);
-    comm_can_transit_eid_servo((tmotor_servo_id & 0xFF) | ((uint32_t) CAN_PACKET_SET_DUTY << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_DUTY << 8), buffer, send_index);
 }
 
 // !!! Scaling might be off !!!
@@ -200,7 +200,7 @@ void TmotorDriver::set_current_loop_callback(const void *msgin) {
     uint8_t buffer[4];
     auto current_clipped = max(-60., min(60., msg->current)) * 100000.;
     buffer_append_int32(buffer, (int32_t)(current_clipped), &send_index);
-    comm_can_transit_eid_servo((tmotor_servo_id & 0xFF) | ((uint32_t) CAN_PACKET_SET_CURRENT << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_CURRENT << 8), buffer, send_index);
 }
 
 void TmotorDriver::set_current_brake_callback(const void *msgin) {
@@ -209,7 +209,7 @@ void TmotorDriver::set_current_brake_callback(const void *msgin) {
     uint8_t buffer[4];
     auto current_clipped = max(0., min(60., msg->current)) * 100000.;
     buffer_append_int32(buffer, (int32_t)(current_clipped), &send_index);
-    comm_can_transit_eid_servo((tmotor_servo_id & 0xFF) | ((uint32_t) CAN_PACKET_SET_CURRENT_BRAKE << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_CURRENT_BRAKE << 8), buffer, send_index);
 }
 
 void TmotorDriver::set_velocity_callback(const void *msgin) {
@@ -218,7 +218,7 @@ void TmotorDriver::set_velocity_callback(const void *msgin) {
     uint8_t buffer[4];
     auto velocity_clipped = max(-100000., min(100000., msg->angular_velocity * 954.92966)); // 10*60/(2*pi)
     buffer_append_int32(buffer, (int32_t)(velocity_clipped), &send_index);
-    comm_can_transit_eid_servo((tmotor_servo_id & 0xFF) | ((uint32_t) CAN_PACKET_SET_RPM << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_RPM << 8), buffer, send_index);
 }
 
 void TmotorDriver::set_position_callback(const void *msgin) {
@@ -227,7 +227,7 @@ void TmotorDriver::set_position_callback(const void *msgin) {
     uint8_t buffer[4];
     auto position_clipped = max(-360000000., min(360000000., msg->angular_position * 572957.80)); // 10000. * 180/pi
     buffer_append_int32(buffer, (int32_t)(position_clipped), &send_index);
-    comm_can_transit_eid_servo(tmotor_servo_id | ((uint32_t) CAN_PACKET_SET_POS << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_POS << 8), buffer, send_index);
 }
 
 void TmotorDriver::set_position_velocity_loop_callback(const void *msgin) {
@@ -240,7 +240,7 @@ void TmotorDriver::set_position_velocity_loop_callback(const void *msgin) {
     buffer_append_int16(buffer, (int16_t)(velocity_clipped), &send_index);
     auto acceleration_clipped = max(0., min(200., msg->angular_acceleration * 95.492966)); // 60/(2*pi)
     buffer_append_int16(buffer, (int16_t)(acceleration_clipped), &send_index);
-    comm_can_transit_eid_servo((tmotor_servo_id & 0xFF) | ((uint32_t) CAN_PACKET_SET_POS_SPD << 8), buffer, send_index);
+    comm_can_transit_eid_servo(msg->id | ((uint32_t) CAN_PACKET_SET_POS_SPD << 8), buffer, send_index);
 }
 
 void TmotorDriver::set_motor_control_callback(const void *msgin) {

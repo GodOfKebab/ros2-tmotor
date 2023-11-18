@@ -117,8 +117,11 @@ Here are some of the test commands I run to make sure I can control the motor fr
 Note: All positions are in rad, velocities in rad/s, accelerations in rads^2, currents in A.
 
 ```
-# To see motor state at 50Hz, run the following.
-ros2 topic echo /micro_ros_teensy/motor_state
+# To see motor state at 50Hz in servo mode, run the following.
+ros2 topic echo /micro_ros_teensy/servo_state
+
+# In motor (mit) mode, you won't get automatic publication. You get as many messages published here as the number of control messages sent to /micro_ros_teensy/set_motor_control
+ros2 topic echo /micro_ros_teensy/mmotor_state
 
 # To test...
 

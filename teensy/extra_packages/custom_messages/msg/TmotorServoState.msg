@@ -21,4 +21,4 @@ int8 temp
 #   - 5 means encoder fault
 #   - 6 means phase current unbalance fault (The hardware may be damaged)
 #   - 7 means teensy error
-int8 error_code
+uint8 error_code

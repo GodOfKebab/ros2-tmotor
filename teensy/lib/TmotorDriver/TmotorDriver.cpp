@@ -162,14 +162,14 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
                     (int16_t) (can_msg.buf[3] | ((int16_t) can_msg.buf[2] << 8)) * 0.01047198;  // 1 / 10 * 6 * pi / 180
             servo_msg.current          = (int16_t) (can_msg.buf[5] | ((int16_t) can_msg.buf[4] << 8)) * 0.01;
             servo_msg.temp             = (int8_t) can_msg.buf[6];
-            servo_msg.error_code       = (int8_t) can_msg.buf[7];
+            servo_msg.error_code       = (uint8_t) can_msg.buf[7];
         }
         RCSOFTCHECK(rcl_publish(&tmotor_servo_state_publisher, &servo_msg, NULL));
     } else if (can_msg.buf[0] == 1) {
         custom_messages__msg__TmotorMotorState motor_msg;
         motor_msg.error_code = 7;
         if (can_msg.len == 8) {
-            motor_msg.id               = (int8_t)can_msg.buf[0];
+            motor_msg.id               = (uint8_t) can_msg.buf[0];
             motor_msg.angular_position =
                     uint_to_float((int16_t)(((int16_t)can_msg.buf[1] << 8) | can_msg.buf[2]), T_MOTOR_P_MIN, T_MOTOR_P_MAX, 16);
             if (motor_msg.angular_position < T_MOTOR_P_MIN) motor_msg.angular_position += T_MOTOR_P_MAX - T_MOTOR_P_MIN;
@@ -177,8 +177,8 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
                     uint_to_float((int16_t)(((int16_t)can_msg.buf[3] << 4) | ((int16_t)can_msg.buf[4] >> 4)), T_MOTOR_V_MIN, T_MOTOR_V_MAX, 12);
             motor_msg.torque           =
                     uint_to_float((int16_t)((((int16_t)can_msg.buf[4]&0xF) << 8) | can_msg.buf[5]), T_MOTOR_T_MIN, T_MOTOR_T_MAX, 12);
-            motor_msg.temp             = (int8_t)can_msg.buf[6];  // this may need conversion
-            motor_msg.error_code       = (int8_t)can_msg.buf[7];
+            motor_msg.temp             = (int8_t) can_msg.buf[6];  // this may need conversion
+            motor_msg.error_code       = (uint8_t) can_msg.buf[7];
         }
         RCSOFTCHECK(rcl_publish(&tmotor_motor_state_publisher, &motor_msg, NULL));
     }

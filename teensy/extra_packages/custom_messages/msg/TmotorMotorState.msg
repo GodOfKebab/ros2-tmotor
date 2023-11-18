@@ -1,7 +1,7 @@
 # "motor packets" in servo mode received from the motor according to the datasheet
 
 # "Driver board ID code"
-int8 id
+uint8 id
 
 # angular position in radians (+- 2 turns)
 float64 angular_position
@@ -24,4 +24,4 @@ int8 temp
 #   - 5 means encoder fault
 #   - 6 means phase current unbalance fault (The hardware may be damaged)
 #   - 7 means teensy error
-int8 error_code
+uint8 error_code

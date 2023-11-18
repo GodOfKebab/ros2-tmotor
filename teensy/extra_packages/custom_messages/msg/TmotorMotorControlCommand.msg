@@ -1,3 +1,6 @@
+# motor id (usually, this is 0x1 by default)
+uint8 id
+
 # desired angular position in radians
 float64 angular_position
 

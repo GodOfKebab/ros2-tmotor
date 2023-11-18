@@ -1,6 +1,5 @@
 #include "TmotorDriver.h"
 
-uint32_t tmotor_motor_id = 0x01;
 
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> CanBus;
 
@@ -141,8 +140,8 @@ void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
     CanBus.onReceive(TmotorDriver::tmotor_state_sniffer);
     CanBus.mailboxStatus();
 
-    comm_can_transit_eid_motor(tmotor_motor_id, zero_mode, 8);
-    comm_can_transit_eid_motor(tmotor_motor_id, enter_mode, 8);
+//    comm_can_transit_eid_motor(tmotor_motor_id, zero_mode, 8);
+//    comm_can_transit_eid_motor(tmotor_motor_id, enter_mode, 8);
 }
 
 void TmotorDriver::check_events() {
@@ -151,7 +150,7 @@ void TmotorDriver::check_events() {
 
 
 void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
-    if (can_msg.buf[0] != 1) {
+    if (can_msg.flags.extended) {
         custom_messages__msg__TmotorServoState servo_msg;
         servo_msg.error_code = 7;
         if (can_msg.len == 8) {
@@ -165,7 +164,7 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
             servo_msg.error_code       = (uint8_t) can_msg.buf[7];
         }
         RCSOFTCHECK(rcl_publish(&tmotor_servo_state_publisher, &servo_msg, NULL));
-    } else if (can_msg.buf[0] == 1) {
+    } else {
         custom_messages__msg__TmotorMotorState motor_msg;
         motor_msg.error_code = 7;
         if (can_msg.len == 8) {
@@ -177,7 +176,7 @@ void TmotorDriver::tmotor_state_sniffer(const CAN_message_t &can_msg) {
                     uint_to_float((int16_t)(((int16_t)can_msg.buf[3] << 4) | ((int16_t)can_msg.buf[4] >> 4)), T_MOTOR_V_MIN, T_MOTOR_V_MAX, 12);
             motor_msg.torque           =
                     uint_to_float((int16_t)((((int16_t)can_msg.buf[4]&0xF) << 8) | can_msg.buf[5]), T_MOTOR_T_MIN, T_MOTOR_T_MAX, 12);
-            motor_msg.temp             = (int8_t) can_msg.buf[6];  // this may need conversion
+            motor_msg.temp             = (int8_t) can_msg.buf[6] - 32;
             motor_msg.error_code       = (uint8_t) can_msg.buf[7];
         }
         RCSOFTCHECK(rcl_publish(&tmotor_motor_state_publisher, &motor_msg, NULL));
@@ -261,7 +260,7 @@ void TmotorDriver::set_motor_control_callback(const void *msgin) {
     buffer[6] = ((k_d_int & 0xF) << 4) | (torque_int >> 8);           // k_d 4 lower + torque 4 higher
     buffer[7] = torque_int & 0xFF;                                    // torque 8 lower
 
-    comm_can_transit_eid_motor(tmotor_motor_id, buffer, 8);
+    comm_can_transit_eid_motor(msg->id, buffer, 8);
 }
 
 // Helper functions from the datasheet

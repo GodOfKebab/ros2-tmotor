@@ -20,6 +20,10 @@ custom_messages__msg__TmotorServoPositionVelocityLoopCommand servo_position_velo
 rcl_subscription_t set_position_velocity_loop_subscriber;
 custom_messages__msg__TmotorMotorControlCommand motor_control_msg;
 rcl_subscription_t set_motor_control_subscriber;
+rcl_service_t set_motor_mode_service;
+custom_messages__srv__TmotorMotorSetMode_Response motor_mode_res;
+custom_messages__srv__TmotorMotorSetMode_Request motor_mode_req;
+
 
 uint8_t enter_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC};
 uint8_t exit_mode[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD};
@@ -132,6 +136,19 @@ void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
                                            &TmotorDriver::set_motor_control_callback,
                                            ON_NEW_DATA));
 
+    // create motor set mode service
+    RCCHECK(rclc_service_init_default(
+            &set_motor_mode_service,
+            node,
+            ROSIDL_GET_SRV_TYPE_SUPPORT(custom_messages, srv, TmotorMotorSetMode),
+            "/micro_ros_teensy/set_motor_mode"));
+
+    RCCHECK(rclc_executor_add_service(executor,
+                                      &set_motor_mode_service,
+                                      &motor_mode_req,
+                                      &motor_mode_res,
+                                      TmotorDriver::set_motor_mode_callback));
+
     CanBus.begin();
     CanBus.setBaudRate(1000000);
     CanBus.setMaxMB(16);
@@ -139,9 +156,6 @@ void TmotorDriver::init(rclc_executor_t* executor, rcl_node_t* node) {
     CanBus.enableFIFOInterrupt();
     CanBus.onReceive(TmotorDriver::tmotor_state_sniffer);
     CanBus.mailboxStatus();
-
-//    comm_can_transit_eid_motor(tmotor_motor_id, zero_mode, 8);
-//    comm_can_transit_eid_motor(tmotor_motor_id, enter_mode, 8);
 }
 
 void TmotorDriver::check_events() {
@@ -261,6 +275,27 @@ void TmotorDriver::set_motor_control_callback(const void *msgin) {
     buffer[7] = torque_int & 0xFF;                                    // torque 8 lower
 
     comm_can_transit_eid_motor(msg->id, buffer, 8);
+}
+
+void TmotorDriver::set_motor_mode_callback(const void * req, void * res) {
+    custom_messages__srv__TmotorMotorSetMode_Request * req_in = (custom_messages__srv__TmotorMotorSetMode_Request *) req;
+    custom_messages__srv__TmotorMotorSetMode_Response * res_in = (custom_messages__srv__TmotorMotorSetMode_Response *) res;
+
+    res_in->success = true;
+    switch (req_in->mode) {
+        case 1:
+            comm_can_transit_eid_motor(req_in->id, enter_mode, 8);
+            break;
+        case 2:
+            comm_can_transit_eid_motor(req_in->id, exit_mode, 8);
+            break;
+        case 3:
+            comm_can_transit_eid_motor(req_in->id, zero_mode, 8);
+            break;
+        default:
+            res_in->success = false;
+            break;
+    }
 }
 
 // Helper functions from the datasheet

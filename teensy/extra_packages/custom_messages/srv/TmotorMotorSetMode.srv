@@ -1,0 +1,7 @@
+# motor id (usually, this is 0x1 by default)
+uint8 id
+
+# mode can be 1 for "enter", 2 for "exit", 3 for "zero"
+uint8 mode
+---
+bool success

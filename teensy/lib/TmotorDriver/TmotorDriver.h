@@ -11,6 +11,7 @@
 #include <custom_messages/msg/tmotor_servo_position_velocity_loop_command.h>
 #include <custom_messages/msg/tmotor_motor_state.h>
 #include <custom_messages/msg/tmotor_motor_control_command.h>
+#include <custom_messages/srv/tmotor_motor_set_mode.h>
 
 #define T_MOTOR_P_MIN  (-12.5)
 #define T_MOTOR_P_MAX    12.5
@@ -65,6 +66,9 @@ private:
 
     // ROS2 topic /micro_ros_teensy/set_motor_control callback handler
     static void set_motor_control_callback(const void *msgin);
+
+    // ROS2 service /micro_ros_teensy/set_motor_mode callback handler
+    static void set_motor_mode_callback(const void * req, void * res);
 
     // Helper functions from the datasheet
     static void comm_can_transit_eid_servo(uint32_t id, const uint8_t* data, uint8_t len);

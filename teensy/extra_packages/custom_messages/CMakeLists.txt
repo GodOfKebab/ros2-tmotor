@@ -35,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/TmotorServoPositionVelocityLoopCommand.msg"
         "msg/TmotorMotorState.msg"
         "msg/TmotorMotorControlCommand.msg"
+        "srv/TmotorMotorSetMode.srv"
         )
 
 ament_package()

@@ -96,20 +96,24 @@ root@df59029b700c:/ros2_ws# ros2 run micro_ros_agent micro_ros_agent serial --de
 ...
 ```
 
-In another terminal, confirm that you have all the topics:
+In another terminal, confirm that you have all the topics and services:
 
 ```
-root@df59029b700c:/ros2_ws# ros2 topic list
-/micro_ros_teensy/motor_state                  # Teensy publishes motor's state here for the MIT controller mode only when control command is sent.  
-/micro_ros_teensy/servo_state                  # Teensy publishes motor's state here for the Servo mode even if you don't send any command to the motor.
-/micro_ros_teensy/set_current_brake            # By publishing to this topic, you can create a brake upto some current.
-/micro_ros_teensy/set_current_loop             # By publishing to this topic, you can create a current based feedback loop.
-/micro_ros_teensy/set_duty_cycle               # By publishing to this topic, you can set the duty cycle of the motor.
-/micro_ros_teensy/set_motor_control            # By publishing to this topic, you can control the motor with MIT contoller.
-/micro_ros_teensy/set_position                 # By publishing to this topic, you can set the angular position.
-/micro_ros_teensy/set_position_velocity_loop   # By publishing to this topic, you can set the angular position with max. velocity and acceleration constraints.
-/micro_ros_teensy/set_velocity                 # By publishing to this topic, you can set the angular velocity.
-...
+root@6505d951f2fa:/ros2_ws# ros2 topic list
+/micro_ros_teensy/motor_state
+/micro_ros_teensy/servo_state
+/micro_ros_teensy/set_current_brake
+/micro_ros_teensy/set_current_loop
+/micro_ros_teensy/set_duty_cycle
+/micro_ros_teensy/set_motor_control
+/micro_ros_teensy/set_position
+/micro_ros_teensy/set_position_velocity_loop
+/micro_ros_teensy/set_velocity
+/parameter_events
+/rosout
+root@6505d951f2fa:/ros2_ws# ros2 service list
+/micro_ros_teensy/set_motor_mode
+root@6505d951f2fa:/ros2_ws# 
 ```
 
 Here are some of the test commands I run to make sure I can control the motor from ROS.
@@ -121,7 +125,7 @@ Note: All positions are in rad, velocities in rad/s, accelerations in rads^2, cu
 ros2 topic echo /micro_ros_teensy/servo_state
 
 # In motor (mit) mode, you won't get automatic publication. You get as many messages published here as the number of control messages sent to /micro_ros_teensy/set_motor_control
-ros2 topic echo /micro_ros_teensy/mmotor_state
+ros2 topic echo /micro_ros_teensy/motor_state
 
 # To test...
 
@@ -138,11 +142,15 @@ ros2 topic pub /micro_ros_teensy/set_current_brake custom_messages/msg/TmotorSer
 ros2 topic pub /micro_ros_teensy/set_velocity custom_messages/msg/TmotorServoVelocityCommand '{angular_velocity: 0.0}'
 
 ## POSITION (between -628.3 and 628.3 rad, 100 turns in each direction)
-ros2 topic pub /micro_ros_teensy/set_position custom_messages/msg/TmotorServoPositionCommand 
-'{angular_position: 0.0}'
+ros2 topic pub /micro_ros_teensy/set_position custom_messages/msg/TmotorServoPositionCommand '{angular_position: 0.0}'
 
 ## POSITION AND VELOCITY (position between -628.3 and 628.3 rad, max velocity between -343.1 and 343.1 rad/s, max acceleration between 0 and 2.0 rad/s^2)
 ros2 topic pub /micro_ros_teensy/set_position_velocity_loop custom_messages/msg/TmotorServoPositionVelocityLoopCommand '{angular_position: 0.0, angular_velocity: 0.0, angular_acceleration: 0.0}' 
+
+## SET MOTOR MODE
+ros2 service call /micro_ros_teensy/set_motor_mode custom_messages/srv/TmotorMotorSetMode '{id: 1, mode: 1}'  # enter mit motor mode
+ros2 service call /micro_ros_teensy/set_motor_mode custom_messages/srv/TmotorMotorSetMode '{id: 1, mode: 2}'  # exit mit motor mode
+ros2 service call /micro_ros_teensy/set_motor_mode custom_messages/srv/TmotorMotorSetMode '{id: 1, mode: 3}'  # set origin/zero-level
 
 ## MOTOR CONTROL
 ros2 topic pub /micro_ros_teensy/set_motor_control custom_messages/msg/TmotorMotorControlCommand '{angular_position: 0.0, k_p: 0.3, angular_velocity: 0.0, k_d: 0.0, torque: 0.0}' -r 10
